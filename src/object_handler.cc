@@ -15,12 +15,11 @@ namespace ObjectHandler {
 	using namespace v8;
 	using namespace std;
 
-	Nan::Persistent<Function> handler;
-
 	// Initializing object handler table
 	static DBusHandlerResult MessageHandler(DBusConnection *connection, DBusMessage *message, void *user_data)
 	{
 		Nan::HandleScope scope;
+        NodeDBus::BusObject *bus = static_cast<NodeDBus::BusObject *>(user_data);
 
 		const char *sender = dbus_message_get_sender(message);
 		const char *object_path = dbus_message_get_path(message);
@@ -54,7 +53,7 @@ namespace ObjectHandler {
 			dbus_message_ref(message);
 
 		// Invoke
-		Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(handler), 7, info);
+        bus->methodCallback->Call(7, info);
 
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
@@ -112,7 +111,7 @@ namespace ObjectHandler {
 		dbus_bool_t ret = dbus_connection_register_object_path(bus->connection,
 			object_path,
 			&vtable,
-			NULL);
+			bus);
 		dbus_connection_flush(bus->connection);
 		dbus_free(object_path);
 		if (!ret) {
@@ -191,16 +190,4 @@ namespace ObjectHandler {
 
 		return;
 	}
-
-	NAN_METHOD(SetObjectHandler) {
-		if (!info[0]->IsFunction()) {
-			return Nan::ThrowTypeError("First parameter must be a function");
-		}
-
-		handler.Reset();
-		handler.Reset(info[0].As<Function>());
-
-		return;
-	}
 }
-

@@ -16,18 +16,6 @@ namespace NodeDBus {
 	v8::Integer::New(constant),											\
 	static_cast<v8::PropertyAttribute>(v8::ReadOnly|v8::DontDelete))
 
-	typedef struct DBusAsyncData {
-//		Nan::Persistent<Function> callback;
-		Nan::Callback *callback;
-		DBusPendingCall *pending;
-		Nan::Callback *createError;
-
-		~DBusAsyncData() {
-			delete createError;
-			delete callback;
-		}
-	} DBusAsyncData;
-
 	typedef enum {
 		NODE_DBUS_BUS_SYSTEM,
 		NODE_DBUS_BUS_SESSION
@@ -37,7 +25,22 @@ namespace NodeDBus {
 		BusType type;
 		DBusConnection *connection;
 		uv_async_t *loop;
+		Nan::Callback *methodCallback;
+		Nan::Callback *signalCallback;
 	} BusObject;
+
+	typedef struct DBusAsyncData {
+//		Nan::Persistent<Function> callback;
+		Nan::Callback *callback;
+		DBusPendingCall *pending;
+		Nan::Callback *createError;
+		BusObject *bus;
+
+		~DBusAsyncData() {
+			delete createError;
+			delete callback;
+		}
+	} DBusAsyncData;
 
 	typedef struct {
 		BusObject *bus;

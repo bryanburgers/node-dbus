@@ -216,6 +216,8 @@ namespace Connection {
 			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 		}
 
+		NodeDBus::BusObject *bus = static_cast<NodeDBus::BusObject *>(user_data);
+
 		// Getting V8 context
 /*
 		Local<Context> context = Context::GetCurrent();
@@ -239,7 +241,7 @@ namespace Connection {
 			arguments
 		};
 
-		Signal::DispatchSignal(info);
+		bus->signalCallback->Call(6, info);
 
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
@@ -265,7 +267,7 @@ namespace Connection {
 		dbus_connection_set_wakeup_main_function(connection, connection_wakeup, connection_loop, connection_loop_close);
 
 		// Initializing signal handler
-		dbus_connection_add_filter(connection, signal_filter, NULL, NULL);
+		dbus_connection_add_filter(connection, signal_filter, bus, NULL);
 	}
 
 	void UnInit(NodeDBus::BusObject *bus)

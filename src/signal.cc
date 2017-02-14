@@ -14,32 +14,6 @@ namespace Signal {
 	using namespace v8;
 	using namespace std;
 
-	//Persistent<Function> handler = Nan::Persistent<Function>::New(Handle<Function>::Cast(Nan::Null()));
-	bool hookSignal = false;
-	Nan::Persistent<Function> handler;
-
-	void DispatchSignal(Local<Value> info[])
-	{
-		Nan::HandleScope scope;
-
-		if (!hookSignal)
-			return;
-
-//		MakeCallback(handler, handler, 6, info);
-		Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(handler), 6, info);
-	}
-
-	NAN_METHOD(SetSignalHandler) {
-//		handler.Dispose();
-//		handler.Clear();
-
-		hookSignal = true;
-		handler.Reset(info[0].As<Function>());
-//		handler = Nan::Persistent<Function>::New(Handle<Function>::Cast(info[0]));
-
-		return;
-	}
-
 	NAN_METHOD(EmitSignal) {
 		if (!info[0]->IsObject()) {
 			return Nan::ThrowTypeError("First parameter must be an object");

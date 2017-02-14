@@ -102,6 +102,12 @@ namespace NodeDBus {
 		if (!info[0]->IsNumber())
 			return Nan::ThrowError("First parameter must be an integer");
 
+		if (!info[1]->IsFunction())
+			return Nan::ThrowError("Second parameter must be a method callback");
+
+		if (!info[2]->IsFunction())
+			return Nan::ThrowError("Third parameter must be a signal callback");
+
 		// Create connection
 		switch(info[0]->IntegerValue()) {
 		case NODE_DBUS_BUS_SYSTEM:
@@ -128,6 +134,8 @@ namespace NodeDBus {
 		BusObject *bus = new BusObject;
 		bus->type = static_cast<BusType>(info[0]->IntegerValue());
 		bus->connection = connection;
+		bus->methodCallback = new Nan::Callback(info[1].As<Function>());
+		bus->signalCallback = new Nan::Callback(info[2].As<Function>());
 
 		// Create a JavaScript object to store bus object
 		Local<Object> bus_object = object_template->NewInstance();
@@ -251,6 +259,7 @@ namespace NodeDBus {
 			data->pending = pending;
 			data->callback = new Nan::Callback(info[8].As<Function>());
 			data->createError = new Nan::Callback(info[9].As<Function>());
+			data->bus = bus;
 			if (!dbus_pending_call_set_notify(pending, method_callback, data, method_free)) {
 				if (message != NULL)
 					dbus_message_unref(message);
@@ -349,9 +358,7 @@ namespace NodeDBus {
 		Nan::SetMethod(exports, "unregisterObjectPath", ObjectHandler::UnregisterObjectPath);
 		Nan::SetMethod(exports, "sendMessageReply", ObjectHandler::SendMessageReply);
 		Nan::SetMethod(exports, "sendErrorMessageReply", ObjectHandler::SendErrorMessageReply);
-		Nan::SetMethod(exports, "setObjectHandler", ObjectHandler::SetObjectHandler);
 		Nan::SetMethod(exports, "parseIntrospectSource", ParseIntrospectSource);
-		Nan::SetMethod(exports, "setSignalHandler", Signal::SetSignalHandler);
 		Nan::SetMethod(exports, "addSignalFilter", AddSignalFilter);
 		Nan::SetMethod(exports, "setMaxMessageSize", SetMaxMessageSize);
 		Nan::SetMethod(exports, "emitSignal", Signal::EmitSignal);
